@@ -3,17 +3,32 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 )
 
-func Max(a, b int) int {
-	if a > b {
-		return a
-	}
+func TopNSnacks(n int, r io.Reader) []int {
+	sum := 0
+	var sums []int
 
-	return b
+	s := bufio.NewScanner(r)
+	for s.Scan() {
+		if s.Text() == "" {
+			sums = append(sums, sum)
+			sum = 0
+			continue
+		}
+
+		if v, err := strconv.Atoi(s.Text()); err == nil {
+			sum += v
+		}
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(sums)))
+
+	return sums[:n]
 }
 
 func main() {
@@ -22,19 +37,8 @@ func main() {
 		log.Fatalf("unable to open input file, err: %v", err)
 	}
 
-	lmax := 0
-	max := 0
-	s := bufio.NewScanner(f)
-	for s.Scan() {
-		if s.Text() == "" {
-			max = Max(lmax, max)
-			lmax = 0
-			continue
-		}
+	top := TopNSnacks(3, f)
 
-		v, _ := strconv.Atoi(s.Text())
-		lmax += v
-	}
-
-	fmt.Println(max)
+	fmt.Printf("Part one: %d\n", top[0])
+	fmt.Printf("Part two: %d\n", top[0]+top[1]+top[2])
 }
