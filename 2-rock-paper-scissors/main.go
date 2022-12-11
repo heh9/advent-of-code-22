@@ -16,18 +16,41 @@ const (
 	Scissors
 )
 
+type Output int
+
+const (
+	Lose Output = 0
+	Draw        = 3
+	Win         = 6
+)
+
 func PlayRound(p1, p2 Move) int {
-	s := p2 + 1
+	var o Output
 
 	switch {
 	case p1 == p2:
-		s += 3
+		o = Draw
 	case (p2+1)%3 != p1:
-		s += 6
+		o = Win
 	default:
+		o = Lose
 	}
 
-	return int(s)
+	return int(o)
+}
+
+func NextMove(m Move, o Output) Move {
+	nm := Rock
+
+	for PlayRound(m, nm) != int(o) {
+		nm++
+	}
+
+	return nm
+}
+
+func StringToOutput(s string) Output {
+	return Output(byte(s[0])-88) * 3
 }
 
 func StringToMove(s string) Move {
@@ -46,13 +69,19 @@ func main() {
 	}
 
 	t := 0
+	tf := 0
 
 	s := bufio.NewScanner(f)
 	for s.Scan() {
 		pp := strings.Fields(s.Text())
 		co, us := StringToMove(pp[0]), StringToMove(pp[1])
-		t += PlayRound(co, us)
+
+		t += PlayRound(co, us) + int(us) + 1
+
+		nm := NextMove(co, StringToOutput(pp[1]))
+		tf += PlayRound(co, nm) + int(nm) + 1
 	}
 
 	fmt.Printf("Part one: %d\n", t)
+	fmt.Printf("Part two: %d\n", tf)
 }
